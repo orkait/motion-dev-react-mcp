@@ -5,6 +5,17 @@
 <h1 align="center">motion-dev-react-mcp</h1>
 
 <p align="center">
+  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT" /></a>
+  <a href="https://nodejs.org"><img src="https://img.shields.io/badge/node-%3E%3D18-brightgreen.svg" alt="Node >= 18" /></a>
+  <a href="https://modelcontextprotocol.io"><img src="https://img.shields.io/badge/MCP-compatible-blue.svg" alt="MCP Compatible" /></a>
+  <a href="https://github.com/orkait/motion-dev-react-mcp/stargazers"><img src="https://img.shields.io/github/stars/orkait/motion-dev-react-mcp?style=social" alt="GitHub Stars" /></a>
+  <br />
+  <a href="https://github.com/orkait/motion-dev-react-mcp/commits/main"><img src="https://img.shields.io/github/last-commit/orkait/motion-dev-react-mcp" alt="Last Commit" /></a>
+  <a href="https://www.npmjs.com/package/motion-dev-react-mcp"><img src="https://img.shields.io/npm/v/motion-dev-react-mcp?color=cb3837" alt="npm version" /></a>
+  <a href="https://motion.dev"><img src="https://img.shields.io/badge/Motion-v12-ff0055.svg" alt="Motion v12" /></a>
+</p>
+
+<p align="center">
   Give your AI assistant perfect knowledge of <a href="https://motion.dev">Motion</a> for React.
   <br />
   <strong>Stop correcting hallucinated props. Start shipping animations.</strong>
