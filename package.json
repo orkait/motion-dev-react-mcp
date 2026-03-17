@@ -1,6 +1,6 @@
 {
   "name": "@orkait-ai/motion-dev-react-mcp",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "MCP server that gives AI assistants accurate Motion (motion.dev) for React documentation, API references, and animation code generation",
   "main": "dist/index.js",
   "bin": {
