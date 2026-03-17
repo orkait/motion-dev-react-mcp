@@ -84,12 +84,14 @@ const motionComponent: ApiEntry = {
     { name: "drag", type: "boolean | 'x' | 'y'", description: "Enable dragging. true for both axes, or constrain to one." },
     { name: "dragConstraints", type: "{ top, left, right, bottom } | RefObject", description: "Pixel constraints or ref to container element." },
     { name: "dragSnapToOrigin", type: "boolean", description: "Animate back to origin on release." },
-    { name: "dragElastic", type: "number | { top, left, right, bottom }", description: "Elasticity outside constraints (0-1).", default: "0.35" },
+    { name: "dragElastic", type: "number | { top, left, right, bottom }", description: "Elasticity outside constraints (0-1).", default: "0.5" },
     { name: "dragMomentum", type: "boolean", description: "Apply inertia on release.", default: "true" },
     { name: "dragTransition", type: "InertiaOptions", description: "Customize inertia physics (bounceStiffness, bounceDamping, power, timeConstant, etc.)." },
     { name: "dragDirectionLock", type: "boolean", description: "Lock drag to first detected axis." },
     { name: "dragControls", type: "DragControls", description: "Pass controls from useDragControls." },
+    { name: "dragPropagation", type: "boolean", description: "Allow drag gesture propagation to child components." },
     { name: "dragListener", type: "boolean", description: "Enable/disable element as drag initiator.", default: "true" },
+    { name: "onDirectionLock", type: "(axis: 'x' | 'y') => void", description: "Callback when drag direction is locked." },
     { name: "layout", type: "boolean | 'position' | 'size'", description: "Enable layout animations. 'position' animates only position, 'size' only size." },
     { name: "layoutId", type: "string", description: "Shared layout animation identifier for cross-component transitions." },
     { name: "layoutDependency", type: "any", description: "Optimize layout measurements to only occur when this value changes." },
@@ -163,7 +165,10 @@ const motionComponent: ApiEntry = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
-    transition: { staggerChildren: 0.1 }
+    transition: {
+      when: "beforeChildren",
+      delayChildren: stagger(0.1)
+    }
   }
 };
 const item = {
@@ -272,10 +277,13 @@ const item = {
   ],
   tips: [
     "Use motion/react-client for React Server Components (Next.js app dir).",
-    "Use motion.create(Component) to wrap custom components (must forward ref).",
-    "Independent transforms (x, y, rotate, scale) are more performant than transform string.",
-    "width/height can animate to/from 'auto'.",
-    "display can animate between 'none' and 'block'.",
+    "motion.create(Component) wraps custom components. In React 18 the component must use forwardRef. In React 19 ref is passed via props automatically.",
+    "motion.create(Component, { forwardMotionProps: true }) forwards motion props to the wrapped component.",
+    "motion.create('custom-element') creates a motion component for custom DOM elements.",
+    "Independent transforms: x, y, z, scale, scaleX, scaleY, rotate, rotateX, rotateY, rotateZ, skewX, skewY, transformPerspective.",
+    "width/height can animate to/from 'auto'. display animates between 'none'/'block'. visibility animates between 'hidden'/'visible'.",
+    "Pass a MotionValue as a child of a motion component to render its latest value: <motion.span>{motionValue}</motion.span>.",
+    "SVG attributes: use attrX, attrY, attrScale for x/y/scale that target SVG attributes instead of transforms.",
   ],
   relatedApis: ["AnimatePresence", "useAnimate", "useMotionValue", "MotionConfig"],
 };
@@ -292,6 +300,7 @@ const animatePresence: ApiEntry = {
     { name: "custom", type: "any", description: "Data passed to exiting components via usePresenceData()." },
     { name: "onExitComplete", type: "() => void", description: "Fires when all exit animations finish." },
     { name: "propagate", type: "boolean", description: "If true, nested AnimatePresence children fire exit animations when parent exits." },
+    { name: "root", type: "ShadowRoot | HTMLElement", description: "Root element for popLayout styles. Defaults to document.head. Set to a ShadowRoot for shadow DOM usage." },
   ],
   usage: `<AnimatePresence>
   {show && (
@@ -352,7 +361,7 @@ const animatePresence: ApiEntry = {
     "AnimatePresence must wrap the conditional — it goes OUTSIDE the {show && ...}.",
     "Each direct child needs a unique key prop.",
     "mode='wait' is useful for page transitions where old page exits before new enters.",
-    "mode='popLayout' pops exiting elements out of document flow immediately.",
+    "mode='popLayout' pops exiting elements out of document flow immediately. Custom component children must use forwardRef (React 18) or accept ref prop (React 19).",
   ],
   relatedApis: ["motion", "usePresence", "useIsPresent", "usePresenceData"],
 };
@@ -1223,16 +1232,23 @@ animate([
 export const TRANSITIONS_REFERENCE = `
 ## Transition Types
 
-### Tween (default for non-transform values)
-{ type: "tween", duration: 0.3, ease: "easeOut" }
-Ease names: "linear", "easeIn", "easeOut", "easeInOut", "circIn", "circOut", "circInOut", "backIn", "backOut", "backInOut", "anticipate"
-Custom: ease: [0.42, 0, 0.58, 1] (cubic bezier) or ease: (t) => t * t (function)
-Keyframe timing: { times: [0, 0.2, 1] } (0-1 per keyframe)
+Motion auto-selects the transition type based on the animated value:
+- Physical values (x, y, scale, rotate): **spring**
+- Non-physical values (opacity, color): **tween**
 
-### Spring — Duration-based (default for physical values like x, y, scale)
+### Tween
+{ type: "tween", duration: 0.3, ease: "easeOut" }
+- duration: seconds (default: 0.3, or 0.8 for keyframes)
+- ease: easing name, cubic bezier array, or JS function
+- times: keyframe timing array (0-1 per keyframe), e.g. { times: [0, 0.2, 1] }
+
+**Easing names:** "linear", "easeIn", "easeOut", "easeInOut", "circIn", "circOut", "circInOut", "backIn", "backOut", "backInOut", "anticipate"
+**Custom:** ease: [0.42, 0, 0.58, 1] (cubic bezier) or ease: (t) => t * t (function)
+
+### Spring — Duration-based (default for physical values)
 { type: "spring", duration: 0.8, bounce: 0.25 }
 - bounce: 0 = no bounce, 1 = very bouncy (default: 0.25)
-- visualDuration: perceived duration (spring settles to 1/10 of movement)
+- visualDuration: perceived duration (spring settles to 1/10 of movement at this time)
 
 ### Spring — Physics-based
 { type: "spring", stiffness: 100, damping: 10, mass: 1 }
@@ -1260,10 +1276,28 @@ Keyframe timing: { times: [0, 0.2, 1] } (0-1 per keyframe)
 
 ## Per-value transitions
 transition: {
-  default: { duration: 0.3 },
-  opacity: { duration: 0.2, ease: "easeOut" },
+  default: { type: "spring" },
+  opacity: { duration: 0.2, ease: "linear" },
   x: { type: "spring", stiffness: 300 }
 }
+
+## Transition inheritance
+Set inherit: true on a transition to merge with lower-specificity transitions (e.g. from MotionConfig).
+Without inherit, a component-level transition fully replaces parent defaults.
+
+## Animatable values
+- **Independent transforms:** x, y, z, scale, scaleX, scaleY, rotate, rotateX, rotateY, rotateZ, skewX, skewY, transformPerspective
+- **Transform origin:** originX (0-1), originY (0-1), originZ (px)
+- **CSS:** opacity, backgroundColor, color, borderRadius, filter, clipPath, boxShadow, etc.
+- **SVG:** pathLength, pathSpacing, pathOffset, cx, cy, r, d, viewBox, attrX, attrY, attrScale
+- **Special:** width/height to "auto", display: "none"/"block", visibility: "hidden"/"visible", CSS variables ("--custom")
+- **Hardware-accelerated:** Set transform directly as CSS string: animate={{ transform: "translateX(100px)" }}
+
+## Keyframes
+- Array values: animate={{ x: [0, 100, 0] }}
+- Wildcard (null): [null, 100, 0] starts from current value
+- Mid-animation hold: [0, 100, null, 0] holds current value mid-sequence
+- Keyframe timing: transition: { times: [0, 0.2, 1] }
 `;
 
 // ---------------------------------------------------------------------------
