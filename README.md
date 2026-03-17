@@ -1,65 +1,137 @@
-# motion-dev-react-mcp
+<p align="center">
+  <img src="https://motion.dev/favicon.svg" width="60" alt="Motion logo" />
+</p>
 
-MCP server for [Motion](https://motion.dev) (formerly Framer Motion) — React animation library. Gives AI assistants instant access to documentation, API references, code examples, and animation snippet generation.
+<h1 align="center">motion-dev-react-mcp</h1>
 
-**React-only. Zero database. Lightweight.**
+<p align="center">
+  Give your AI assistant perfect knowledge of <a href="https://motion.dev">Motion</a> for React.
+  <br />
+  <strong>Stop correcting hallucinated props. Start shipping animations.</strong>
+</p>
 
-## Tools
+<p align="center">
+  <a href="#quick-start">Quick Start</a> &middot;
+  <a href="#what-it-does">What It Does</a> &middot;
+  <a href="#tools">Tools</a> &middot;
+  <a href="#why-this-exists">Why This Exists</a>
+</p>
 
-| Tool | Description |
-|------|-------------|
-| `list_apis` | List all Motion React APIs, filterable by kind (component, hook, function, utility) |
-| `get_api` | Detailed API reference — props, usage, examples, tips |
-| `search_docs` | Full-text search across docs and code examples |
-| `get_examples` | Code examples by category (scroll, drag, hover, layout, exit, etc.) |
-| `get_transitions` | Complete transition types reference (tween, spring, inertia, orchestration) |
-| `generate_animation` | Generate animation snippets from natural language descriptions |
+---
 
-## Resources
+## The Problem
 
-| URI | Description |
-|-----|-------------|
-| `motion://react/cheatsheet` | Quick reference cheatsheet |
+You ask your AI to add a scroll-linked parallax animation with Motion. It gives you code with made-up props, deprecated Framer Motion imports, and a `useViewportScroll` hook that hasn't existed since 2022.
 
-## Coverage
+You spend the next 20 minutes fixing hallucinations instead of building your UI.
 
-25 React APIs documented:
+## The Fix
 
-- **Components:** `motion`, `AnimatePresence`, `LayoutGroup`, `LazyMotion`, `MotionConfig`, `Reorder.Group`, `Reorder.Item`
-- **Hooks:** `useAnimate`, `useMotionValue`, `useTransform`, `useSpring`, `useScroll`, `useInView`, `useMotionValueEvent`, `useVelocity`, `useTime`, `useMotionTemplate`, `useDragControls`, `useAnimationFrame`, `useReducedMotion`, `useIsPresent`, `usePresence`, `usePresenceData`
-- **Utilities:** `stagger`, `animate`
+`motion-dev-react-mcp` is an [MCP server](https://modelcontextprotocol.io) that gives any AI assistant — Claude, Cursor, Windsurf, or anything that speaks MCP — direct access to the **complete, accurate** Motion for React documentation.
 
-14 example categories: animation, gestures, scroll, layout, exit, drag, hover, svg, transitions, variants, keyframes, spring, reorder, performance.
+No hallucinated APIs. No outdated imports. Just correct code, first try.
 
-## Installation
+## Quick Start
 
-### Claude Code
+**One command. That's it.**
 
 ```bash
-claude mcp add motion-react-mcp -- node /path/to/motion-react-mcp/dist/index.js
+# Clone and build
+git clone https://github.com/orkait/motion-dev-react-mcp.git
+cd motion-dev-react-mcp
+npm install && npm run build
+
+# Add to Claude Code
+claude mcp add motion-react-mcp -- node $(pwd)/dist/index.js
 ```
 
-### Generic MCP client
+<details>
+<summary><strong>Cursor / Windsurf / Other MCP clients</strong></summary>
+
+Add to your MCP config (typically `~/.cursor/mcp.json` or equivalent):
 
 ```json
 {
   "mcpServers": {
     "motion-react-mcp": {
       "command": "node",
-      "args": ["/path/to/motion-react-mcp/dist/index.js"]
+      "args": ["/absolute/path/to/motion-dev-react-mcp/dist/index.js"]
     }
   }
 }
 ```
 
-### Build from source
+</details>
 
-```bash
-git clone https://github.com/orkait/motion-dev-react-mcp.git
-cd motion-dev-react-mcp
-npm install
-npm run build
+## What It Does
+
+Ask your AI to build any Motion animation. The MCP server silently provides it with the right APIs, props, and patterns — so the generated code actually works.
+
+**Before (without MCP):**
+```tsx
+// AI hallucinates deprecated API
+import { useViewportScroll } from "framer-motion"  // wrong
 ```
+
+**After (with MCP):**
+```tsx
+// AI looks up the real API via MCP
+import { useScroll, useTransform } from "motion/react"  // correct
+
+const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
+const y = useTransform(scrollYProgress, [0, 1], [0, -100]);
+```
+
+## Tools
+
+Your AI gets 6 tools to work with:
+
+| Tool | What your AI uses it for |
+|------|--------------------------|
+| `get_api` | Look up exact props, types, and usage for any component or hook |
+| `search_docs` | Find the right API for a task ("how to animate on scroll") |
+| `get_examples` | Get working code patterns by category (scroll, drag, layout, exit...) |
+| `generate_animation` | Turn a plain-English description into a ready-to-use component |
+| `get_transitions` | Reference for spring, tween, inertia config and orchestration |
+| `list_apis` | Browse all available APIs |
+
+Plus a `motion://react/cheatsheet` resource for quick reference.
+
+## Coverage
+
+**25 APIs** across the full Motion for React surface:
+
+| | APIs |
+|-|------|
+| Components | `motion` `AnimatePresence` `LayoutGroup` `LazyMotion` `MotionConfig` `Reorder.Group` `Reorder.Item` |
+| Hooks | `useAnimate` `useMotionValue` `useTransform` `useSpring` `useScroll` `useInView` `useMotionValueEvent` `useVelocity` `useTime` `useMotionTemplate` `useDragControls` `useAnimationFrame` `useReducedMotion` `useIsPresent` `usePresence` `usePresenceData` |
+| Utilities | `animate` `stagger` |
+
+**14 example categories:** animation, gestures, scroll, layout, exit, drag, hover, SVG, transitions, variants, keyframes, spring, reorder, performance.
+
+Every prop documented. Every API with working examples. Sourced directly from [motion.dev/docs](https://motion.dev/docs).
+
+## Why This Exists
+
+- **AI models hallucinate animation APIs constantly.** Motion (formerly Framer Motion) has changed significantly — old training data leads to wrong code.
+- **Existing solutions are bloated.** The only other Motion MCP bundles SQLite, Babel, and 180+ dependencies for... a docs lookup. This one has **2 runtime dependencies**.
+- **React only.** No half-baked Vue/JS conversion stubs. Focused coverage for the framework you're actually using.
+
+## How It Works
+
+All documentation is embedded as structured TypeScript data — no database, no network calls, no scraping at runtime. The MCP server starts in milliseconds and responds instantly.
+
+```
+src/
+  data.ts    # 25 APIs with full props, usage, examples, tips
+  index.ts   # MCP server — 6 tools + 1 resource
+```
+
+Total: **2 source files. 2 runtime dependencies. ~55KB bundled.**
+
+## Contributing
+
+PRs welcome. If Motion adds new APIs or you spot inaccuracies, open an issue or submit a fix.
 
 ## License
 

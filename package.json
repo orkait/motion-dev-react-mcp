@@ -1,7 +1,7 @@
 {
-  "name": "motion-react-mcp",
+  "name": "motion-dev-react-mcp",
   "version": "1.0.0",
-  "description": "MCP server for Motion (motion.dev) React animation library",
+  "description": "MCP server that gives AI assistants accurate Motion (motion.dev) for React documentation, API references, and animation code generation",
   "main": "dist/index.js",
   "bin": {
     "motion-react-mcp": "dist/index.js"
@@ -11,8 +11,37 @@
     "start": "node dist/index.js",
     "dev": "tsc --watch"
   },
-  "keywords": ["mcp", "motion", "framer-motion", "react", "animation"],
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "motion",
+    "motion-dev",
+    "framer-motion",
+    "react",
+    "animation",
+    "ai",
+    "claude",
+    "cursor",
+    "windsurf"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/orkait/motion-dev-react-mcp.git"
+  },
+  "homepage": "https://github.com/orkait/motion-dev-react-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/orkait/motion-dev-react-mcp/issues"
+  },
+  "author": "Orkait",
   "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.17.0"
   },
