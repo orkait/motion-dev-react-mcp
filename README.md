@@ -13,26 +13,13 @@
 </p>
 
 <p align="center">
-  Give your AI the <strong>complete, source-verified</strong> <a href="https://motion.dev">Motion</a> for React API.<br/>
-  33 APIs. 70 tests. Zero hallucinations.
-</p>
-
-<p align="center">
-  <a href="#quick-start">Quick Start</a> &middot;
-  <a href="#before--after">Before / After</a> &middot;
-  <a href="#tools">Tools</a> &middot;
-  <a href="#coverage">Coverage</a> &middot;
-  <a href="#why-this-exists">Why</a>
+  <a href="https://motion.dev">Motion</a> for React — inside your AI assistant.<br/>
+  <strong>33 APIs. Correct imports. Accurate defaults. No hallucinations.</strong>
 </p>
 
 ---
 
-## Quick Start
-
-```bash
-# npx — zero install, works everywhere
-npx @orkait-ai/motion-dev-react-mcp
-```
+## Install
 
 **Claude Code**
 ```bash
@@ -52,7 +39,7 @@ claude mcp add motion-dev-react-mcp -- npx -y @orkait-ai/motion-dev-react-mcp
 ```
 
 <details>
-<summary>Or install from source</summary>
+<summary>Build from source</summary>
 
 ```bash
 git clone https://github.com/orkait/motion-dev-react-mcp.git
@@ -63,93 +50,64 @@ claude mcp add motion-dev-react-mcp -- node $(pwd)/dist/index.js
 
 ---
 
-## Before / After
+## What it does
 
-**Without MCP** — your AI guesses wrong:
+Your AI writes Motion code that actually works — because it can look up the real API instead of guessing.
+
 ```tsx
-import { useViewportScroll } from "framer-motion"  // deprecated since 2022
+// Without MCP — AI hallucinates
+import { useViewportScroll } from "framer-motion"  // wrong
+
+// With MCP — AI looks it up
+import { useScroll, useTransform } from "motion/react"  // correct
+const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
 ```
-
-**With MCP** — your AI looks it up:
-```tsx
-import { useScroll, useTransform } from "motion/react"
-
-const { scrollYProgress } = useScroll({
-  target: ref,
-  offset: ["start end", "end start"]
-});
-const y = useTransform(scrollYProgress, [0, 1], [0, -100]);
-```
-
----
 
 ## Tools
 
 | Tool | Purpose |
 |------|---------|
-| **`get_api`** | Exact props, types, defaults, and usage for any API |
-| **`search_docs`** | Find the right API for a task — *"how to animate on scroll"* |
+| **`get_api`** | Props, types, defaults, and usage for any component or hook |
+| **`search_docs`** | Find the right API — *"how to animate on scroll"* |
 | **`get_examples`** | Working code by category — scroll, drag, layout, exit, SVG... |
-| **`generate_animation`** | Plain English &rarr; ready-to-use React component |
-| **`get_transitions`** | Spring, tween, inertia config + orchestration reference |
+| **`generate_animation`** | Describe what you want &rarr; get a working component |
+| **`get_transitions`** | Spring, tween, inertia config and orchestration |
 | **`list_apis`** | Browse all 33 APIs, filter by kind |
-
-Plus a `motion://react/cheatsheet` resource for quick reference.
 
 ---
 
 ## Coverage
 
-**33 APIs** verified against [`motiondivision/motion`](https://github.com/motiondivision/motion) v12.38.0 source code.
+**33 APIs** — verified against [`motiondivision/motion`](https://github.com/motiondivision/motion) v12 source code.
 
-| Kind | Count | APIs |
-|------|-------|------|
-| **Components** | 7 | `motion` &middot; `AnimatePresence` &middot; `LayoutGroup` &middot; `LazyMotion` &middot; `MotionConfig` &middot; `Reorder.Group` &middot; `Reorder.Item` |
-| **Hooks** | 19 | `useAnimate` &middot; `useMotionValue` &middot; `useTransform` &middot; `useSpring` &middot; `useScroll` &middot; `useInView` &middot; `useMotionValueEvent` &middot; `useVelocity` &middot; `useTime` &middot; `useMotionTemplate` &middot; `useDragControls` &middot; `useAnimationFrame` &middot; `useReducedMotion` &middot; `useIsPresent` &middot; `usePresence` &middot; `usePresenceData` &middot; `useWillChange` &middot; `useCycle` &middot; `usePageInView` |
-| **Functions** | 7 | `animate` &middot; `stagger` &middot; `hover` (<1kb) &middot; `press` &middot; `scroll` &middot; `inView` &middot; `motion.create` |
+| | |
+|-|-|
+| **Components** | `motion` `AnimatePresence` `LayoutGroup` `LazyMotion` `MotionConfig` `Reorder.Group` `Reorder.Item` |
+| **Hooks** | `useAnimate` `useMotionValue` `useTransform` `useSpring` `useScroll` `useInView` `useMotionValueEvent` `useVelocity` `useTime` `useMotionTemplate` `useDragControls` `useAnimationFrame` `useReducedMotion` `useIsPresent` `usePresence` `usePresenceData` `useWillChange` `useCycle` `usePageInView` |
+| **Functions** | `animate` `stagger` `hover` `press` `scroll` `inView` |
 
-**14 example categories** &mdash; animation, gestures, scroll, layout, exit, drag, hover, SVG, transitions, variants, keyframes, spring, reorder, performance.
+**14 example categories** — animation, gestures, scroll, layout, exit, drag, hover, SVG, transitions, variants, keyframes, spring, reorder, performance.
 
-### Source-verified defaults
-
-Default values checked against the actual source — not the docs (which have [known inaccuracies](https://github.com/motiondivision/motion)):
-
-| Property | Default | Why it matters |
-|----------|---------|----------------|
-| `dragElastic` | **0.35** | Docs say 0.5 — source says 0.35 |
-| Spring (transforms) | **stiffness: 500, damping: 25** | Not the generic 100/10 |
-| Spring (scale) | **stiffness: 550, damping: 30** | Different from other transforms |
-| Tween duration | **0.3s** (keyframes: 0.8s) | |
-| Inertia timeConstant | **325** | Docs say 700 — source says 325 |
+Every prop, every default, every example — cross-referenced against the source, not just the docs.
 
 ---
 
-## Why This Exists
+## Why this over the other one
 
-| Problem | This MCP |
-|---------|----------|
-| AI hallucinates Motion APIs constantly (Framer Motion &rarr; Motion rename broke training data) | **33 source-verified APIs** with correct imports |
-| The other Motion MCP bundles SQLite + Babel + 180 deps | **2 runtime dependencies**, starts in ms |
-| Other MCPs cover React + Vue + JS with half-baked stubs | **React only** — focused, complete |
-| Docs have wrong defaults (dragElastic, timeConstant) | **Source-verified** against v12.38.0 |
-
----
-
-## Architecture
-
-```
-src/
-  data.ts    33 APIs — props, usage, examples, tips
-  index.ts   MCP server — 6 tools + 1 resource
-```
-
-2 files &middot; 2 deps &middot; ~75KB &middot; 70 tests &middot; 0 network calls
+| | motion-dev-react-mcp | [the other MCP](https://github.com/Abhishekrajpurohit/motion-dev-mcp) |
+|-|---|---|
+| **APIs** | 33 | 9 (5 broken) |
+| **Dependencies** | 2 | 180+ (SQLite, Babel, Cheerio...) |
+| **Framework** | React only | React + Vue + JS (stubs) |
+| **Defaults** | Source-verified | From docs (some wrong) |
+| **Tests** | 70 passing | 1 (`1+1=2`) |
+| **Last updated** | Active | Aug 2025 |
 
 ---
 
 ## Contributing
 
-PRs welcome. Motion adds new APIs? Spot an inaccuracy? [Open an issue](https://github.com/orkait/motion-dev-react-mcp/issues).
+PRs welcome. [Open an issue](https://github.com/orkait/motion-dev-react-mcp/issues) if Motion adds new APIs or you spot an inaccuracy.
 
 Motion+ paid components (AnimateNumber, Carousel, Cursor, ScrambleText, Ticker, Typewriter) are intentionally excluded.
 
