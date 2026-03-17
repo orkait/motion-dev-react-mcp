@@ -11,7 +11,7 @@
   <a href="https://github.com/orkait/motion-dev-react-mcp/stargazers"><img src="https://img.shields.io/github/stars/orkait/motion-dev-react-mcp?style=social" alt="GitHub Stars" /></a>
   <br />
   <a href="https://github.com/orkait/motion-dev-react-mcp/commits/main"><img src="https://img.shields.io/github/last-commit/orkait/motion-dev-react-mcp" alt="Last Commit" /></a>
-  <a href="https://www.npmjs.com/package/motion-dev-react-mcp"><img src="https://img.shields.io/npm/v/motion-dev-react-mcp?color=cb3837" alt="npm version" /></a>
+  <a href="https://www.npmjs.com/package/@orkait-ai/motion-dev-react-mcp"><img src="https://img.shields.io/npm/v/@orkait-ai/motion-dev-react-mcp?color=cb3837" alt="npm version" /></a>
   <a href="https://motion.dev"><img src="https://img.shields.io/badge/Motion-v12-ff0055.svg" alt="Motion v12" /></a>
 </p>
 
@@ -25,6 +25,7 @@
   <a href="#quick-start">Quick Start</a> &middot;
   <a href="#what-it-does">What It Does</a> &middot;
   <a href="#tools">Tools</a> &middot;
+  <a href="#coverage">Coverage</a> &middot;
   <a href="#why-this-exists">Why This Exists</a>
 </p>
 
@@ -44,15 +45,22 @@ No hallucinated APIs. No outdated imports. Just correct code, first try.
 
 ## Quick Start
 
-**One command. That's it.**
+### From npm (easiest)
 
 ```bash
-# Clone and build
+npm install -g @orkait-ai/motion-dev-react-mcp
+
+# Add to Claude Code
+claude mcp add motion-dev-react-mcp -- motion-dev-react-mcp
+```
+
+### From source
+
+```bash
 git clone https://github.com/orkait/motion-dev-react-mcp.git
 cd motion-dev-react-mcp
 npm install && npm run build
 
-# Add to Claude Code
 claude mcp add motion-dev-react-mcp -- node $(pwd)/dist/index.js
 ```
 
@@ -65,8 +73,8 @@ Add to your MCP config (typically `~/.cursor/mcp.json` or equivalent):
 {
   "mcpServers": {
     "motion-dev-react-mcp": {
-      "command": "node",
-      "args": ["/absolute/path/to/motion-dev-react-mcp/dist/index.js"]
+      "command": "npx",
+      "args": ["-y", "@orkait-ai/motion-dev-react-mcp"]
     }
   }
 }
@@ -110,23 +118,47 @@ Plus a `motion://react/cheatsheet` resource for quick reference.
 
 ## Coverage
 
-**25 APIs** across the full Motion for React surface:
+**33 APIs** across the full Motion for React surface — verified against [motiondivision/motion](https://github.com/motiondivision/motion) v12.38.0 source code.
 
 | | APIs |
 |-|------|
-| Components | `motion` `AnimatePresence` `LayoutGroup` `LazyMotion` `MotionConfig` `Reorder.Group` `Reorder.Item` |
-| Hooks | `useAnimate` `useMotionValue` `useTransform` `useSpring` `useScroll` `useInView` `useMotionValueEvent` `useVelocity` `useTime` `useMotionTemplate` `useDragControls` `useAnimationFrame` `useReducedMotion` `useIsPresent` `usePresence` `usePresenceData` |
-| Utilities | `animate` `stagger` |
+| Components (7) | `motion` `AnimatePresence` `LayoutGroup` `LazyMotion` `MotionConfig` `Reorder.Group` `Reorder.Item` |
+| Hooks (19) | `useAnimate` `useMotionValue` `useTransform` `useSpring` `useScroll` `useInView` `useMotionValueEvent` `useVelocity` `useTime` `useMotionTemplate` `useDragControls` `useAnimationFrame` `useReducedMotion` `useIsPresent` `usePresence` `usePresenceData` `useWillChange` `useCycle` `usePageInView` |
+| Functions (5) | `animate` `stagger` `hover` `press` `scroll` |
+| Utilities (2) | `inView` + `motion://react/cheatsheet` resource |
 
 **14 example categories:** animation, gestures, scroll, layout, exit, drag, hover, SVG, transitions, variants, keyframes, spring, reorder, performance.
 
-Every prop documented. Every API with working examples. Sourced directly from [motion.dev/docs](https://motion.dev/docs).
+### Source-verified defaults
+
+All default values are cross-referenced against the actual source code, not just docs:
+
+| Value | Default | Source file |
+|-------|---------|-------------|
+| `dragElastic` | `0.35` | `gestures/drag/utils/constraints.ts` |
+| Spring (generic) | `stiffness: 100, damping: 10, mass: 1` | `animation/generators/spring.ts` |
+| Spring (transforms) | `stiffness: 500, damping: 25` | `animation/utils/default-transitions.ts` |
+| Spring (scale) | `stiffness: 550, damping: 30` | `animation/utils/default-transitions.ts` |
+| Tween duration | `0.3s` (keyframes: `0.8s`) | `animation/generators/keyframes.ts` |
+| Inertia timeConstant | `325` | `animation/generators/inertia.ts` |
+
+### Standalone functions (framework-agnostic)
+
+Tiny, tree-shakeable functions from the `"motion"` package:
+
+| Function | Size | Description |
+|----------|------|-------------|
+| `hover()` | <1kb | Hover gesture with cleanup |
+| `press()` | <1kb | Press gesture, keyboard accessible |
+| `scroll()` | small | Scroll-linked animations |
+| `inView()` | small | IntersectionObserver wrapper |
 
 ## Why This Exists
 
 - **AI models hallucinate animation APIs constantly.** Motion (formerly Framer Motion) has changed significantly — old training data leads to wrong code.
 - **Existing solutions are bloated.** The only other Motion MCP bundles SQLite, Babel, and 180+ dependencies for... a docs lookup. This one has **2 runtime dependencies**.
 - **React only.** No half-baked Vue/JS conversion stubs. Focused coverage for the framework you're actually using.
+- **Source-verified.** Every default value checked against the actual Motion v12 source code — not just the docs (which have known inaccuracies).
 
 ## How It Works
 
@@ -134,15 +166,17 @@ All documentation is embedded as structured TypeScript data — no database, no 
 
 ```
 src/
-  data.ts    # 25 APIs with full props, usage, examples, tips
+  data.ts    # 33 APIs with full props, usage, examples, tips
   index.ts   # MCP server — 6 tools + 1 resource
 ```
 
-Total: **2 source files. 2 runtime dependencies. ~55KB bundled.**
+**2 source files. 2 runtime dependencies. ~75KB bundled. 70-point test suite passing.**
 
 ## Contributing
 
 PRs welcome. If Motion adds new APIs or you spot inaccuracies, open an issue or submit a fix.
+
+**Note:** Motion+ paid components (AnimateNumber, Carousel, Cursor, ScrambleText, Ticker, Typewriter) are intentionally excluded — this MCP covers the free, open-source Motion library only.
 
 ## License
 
