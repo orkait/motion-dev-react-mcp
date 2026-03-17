@@ -1,0 +1,23 @@
+{
+  "name": "motion-react-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for Motion (motion.dev) React animation library",
+  "main": "dist/index.js",
+  "bin": {
+    "motion-react-mcp": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsc --watch"
+  },
+  "keywords": ["mcp", "motion", "framer-motion", "react", "animation"],
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.17.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.5.0"
+  }
+}
