@@ -4,7 +4,7 @@
   "description": "MCP server that gives AI assistants accurate Motion (motion.dev) for React documentation, API references, and animation code generation",
   "main": "dist/index.js",
   "bin": {
-    "motion-react-mcp": "dist/index.js"
+    "motion-dev-react-mcp": "dist/index.js"
   },
   "scripts": {
     "build": "tsc",

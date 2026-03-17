@@ -53,7 +53,7 @@ cd motion-dev-react-mcp
 npm install && npm run build
 
 # Add to Claude Code
-claude mcp add motion-react-mcp -- node $(pwd)/dist/index.js
+claude mcp add motion-dev-react-mcp -- node $(pwd)/dist/index.js
 ```
 
 <details>
@@ -64,7 +64,7 @@ Add to your MCP config (typically `~/.cursor/mcp.json` or equivalent):
 ```json
 {
   "mcpServers": {
-    "motion-react-mcp": {
+    "motion-dev-react-mcp": {
       "command": "node",
       "args": ["/absolute/path/to/motion-dev-react-mcp/dist/index.js"]
     }

@@ -17,7 +17,7 @@ import {
 } from "./data.js";
 
 const server = new McpServer({
-  name: "motion-react-mcp",
+  name: "motion-dev-react-mcp",
   version: "1.0.0",
 });
 
