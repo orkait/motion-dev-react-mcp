@@ -1255,6 +1255,7 @@ Keyframe timing: { times: [0, 0.2, 1] } (0-1 per keyframe)
 - repeatType: "loop" | "reverse" | "mirror"
 - repeatDelay: seconds between repeats
 - when: "beforeChildren" | "afterChildren" (variants only)
+- staggerChildren: seconds between each child animation (variants only)
 - delayChildren: seconds or stagger() (variants only)
 
 ## Per-value transitions
