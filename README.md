@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://motion.dev/favicon.svg" width="60" alt="Motion logo" />
+  <img src="./logo.png" width="120" alt="motion-dev-react-mcp logo" />
 </p>
 
 <h1 align="center">motion-dev-react-mcp</h1>
