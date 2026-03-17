@@ -84,7 +84,7 @@ const motionComponent: ApiEntry = {
     { name: "drag", type: "boolean | 'x' | 'y'", description: "Enable dragging. true for both axes, or constrain to one." },
     { name: "dragConstraints", type: "{ top, left, right, bottom } | RefObject", description: "Pixel constraints or ref to container element." },
     { name: "dragSnapToOrigin", type: "boolean", description: "Animate back to origin on release." },
-    { name: "dragElastic", type: "number | { top, left, right, bottom }", description: "Elasticity outside constraints (0-1).", default: "0.5" },
+    { name: "dragElastic", type: "number | { top, left, right, bottom }", description: "Elasticity outside constraints (0-1).", default: "0.35" },
     { name: "dragMomentum", type: "boolean", description: "Apply inertia on release.", default: "true" },
     { name: "dragTransition", type: "InertiaOptions", description: "Customize inertia physics (bounceStiffness, bounceDamping, power, timeConstant, etc.)." },
     { name: "dragDirectionLock", type: "boolean", description: "Lock drag to first detected axis." },
@@ -242,6 +242,64 @@ const item = {
   animate={{ pathLength: 1 }}
   transition={{ duration: 2 }}
 />`,
+    },
+    {
+      title: "SVG path morphing",
+      category: "svg",
+      code: `<motion.path
+  d="M 0,0 l 0,10 l 10,10"
+  animate={{ d: "M 0,0 l 10,0 l 10,10" }}
+  transition={{ duration: 1 }}
+/>`,
+      description: "Paths must have same number and type of instructions.",
+    },
+    {
+      title: "Scroll image reveal with clipPath",
+      category: "scroll",
+      code: `function ImageReveal() {
+  const ref = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start end", "center center"]
+  });
+  const clipPath = useTransform(
+    scrollYProgress,
+    [0, 1],
+    ["inset(0% 50% 0% 50%)", "inset(0% 0% 0% 0%)"]
+  );
+
+  return (
+    <motion.div ref={ref} style={{ clipPath }}>
+      <img src="/photo.jpg" alt="Revealed" />
+    </motion.div>
+  );
+}`,
+    },
+    {
+      title: "Snap-to-grid drag",
+      category: "drag",
+      code: `<motion.div
+  drag
+  dragTransition={{
+    power: 0,
+    modifyTarget: target => Math.round(target / 50) * 50
+  }}
+/>`,
+    },
+    {
+      title: "Animate counter without re-renders",
+      category: "animation",
+      code: `function Counter() {
+  const count = useMotionValue(0);
+
+  useEffect(() => {
+    const controls = animate(count, 100, { duration: 5 });
+    return () => controls.stop();
+  }, []);
+
+  return <motion.pre>{count}</motion.pre>;
+}`,
+      description: "Pass a MotionValue as child to render its latest value.",
     },
     {
       title: "Animate CSS variables",
@@ -1226,6 +1284,163 @@ animate([
 };
 
 // ---------------------------------------------------------------------------
+// ADDITIONAL HOOKS
+// ---------------------------------------------------------------------------
+
+const useWillChange: ApiEntry = {
+  name: "useWillChange",
+  kind: "hook",
+  description: "Returns an optimized will-change MotionValue. Pass to style.willChange to automatically manage will-change CSS property during animations.",
+  importPath: 'import { useWillChange } from "motion/react"',
+  returns: "WillChange",
+  usage: `const willChange = useWillChange();
+return <motion.div style={{ willChange }} animate={{ x: 100 }} />;`,
+  examples: [],
+  relatedApis: ["useMotionValue"],
+};
+
+const useCycle: ApiEntry = {
+  name: "useCycle",
+  kind: "hook",
+  description: "Cycles through a list of values. Returns [currentValue, cycleFunction]. Call cycle() to advance, or cycle(index) to jump.",
+  importPath: 'import { useCycle } from "motion/react"',
+  returns: "[T, (index?: number) => void]",
+  usage: `const [color, cycleColor] = useCycle("#f00", "#0f0", "#00f");
+
+return <motion.div animate={{ backgroundColor: color }} onClick={() => cycleColor()} />;`,
+  examples: [
+    {
+      title: "Toggle animation state",
+      category: "animation",
+      code: `function Toggle() {
+  const [isOn, toggle] = useCycle(false, true);
+  return (
+    <motion.div
+      animate={{ scale: isOn ? 1.2 : 1 }}
+      onClick={() => toggle()}
+    />
+  );
+}`,
+    },
+  ],
+  relatedApis: ["motion"],
+};
+
+const usePageInView: ApiEntry = {
+  name: "usePageInView",
+  kind: "hook",
+  description: "Returns true when the current page/tab is the user's active tab. Uses document.visibilitychange. Useful for pausing animations or video when tab is hidden.",
+  importPath: 'import { usePageInView } from "motion/react"',
+  returns: "boolean",
+  usage: `const isPageInView = usePageInView();`,
+  examples: [
+    {
+      title: "Pause video when tab hidden",
+      category: "performance",
+      code: `function VideoPlayer() {
+  const videoRef = useRef(null);
+  const isPageVisible = usePageInView();
+
+  useEffect(() => {
+    if (!videoRef.current) return;
+    isPageVisible ? videoRef.current.play() : videoRef.current.pause();
+  }, [isPageVisible]);
+
+  return <video ref={videoRef} src="/video.mp4" />;
+}`,
+    },
+  ],
+  relatedApis: ["useInView"],
+};
+
+// ---------------------------------------------------------------------------
+// STANDALONE FUNCTIONS (framework-agnostic, from "motion" package)
+// ---------------------------------------------------------------------------
+
+const hoverFn: ApiEntry = {
+  name: "hover",
+  kind: "function",
+  description: "Standalone hover gesture function. Under 1kb. Returns a cleanup function. The callback can return a cleanup that fires on hover end.",
+  importPath: 'import { hover } from "motion"',
+  returns: "() => void (cleanup)",
+  usage: `const cleanup = hover(element, (event) => {
+  console.log("hover start");
+  return () => console.log("hover end");
+});`,
+  examples: [
+    {
+      title: "Standalone hover with React ref",
+      category: "hover",
+      code: `import { hover } from "motion"
+import { useRef, useEffect } from "react"
+
+function HoverButton() {
+  const ref = useRef(null);
+
+  useEffect(() => {
+    return hover(ref.current, () => {
+      ref.current.style.scale = "1.1";
+      return () => { ref.current.style.scale = "1"; };
+    });
+  }, []);
+
+  return <button ref={ref}>Hover me</button>;
+}`,
+    },
+  ],
+  tips: ["Under 1kb — smallest hover animation possible.", "Import from 'motion' (not 'motion/react')."],
+  relatedApis: ["motion"],
+};
+
+const pressFn: ApiEntry = {
+  name: "press",
+  kind: "function",
+  description: "Standalone press gesture function with keyboard accessibility (Enter/Space). Returns a cleanup function.",
+  importPath: 'import { press } from "motion"',
+  returns: "() => void (cleanup)",
+  usage: `const cleanup = press(element, (event) => {
+  console.log("press start");
+  return () => console.log("press end");
+});`,
+  examples: [],
+  tips: ["Keyboard accessible: responds to Enter and Space keys.", "Import from 'motion' (not 'motion/react')."],
+  relatedApis: ["motion", "hover"],
+};
+
+const scrollFn: ApiEntry = {
+  name: "scroll",
+  kind: "function",
+  description: "Standalone scroll-linked animation function. Framework-agnostic. Can accept a callback or an animation to link to scroll progress.",
+  importPath: 'import { scroll } from "motion"',
+  returns: "() => void (cleanup)",
+  usage: `// Callback
+scroll((progress) => {
+  console.log(progress); // 0-1
+});
+
+// Link animation to scroll
+scroll(animate("#progress", { scaleX: [0, 1] }));`,
+  examples: [],
+  tips: ["Framework-agnostic — works without React.", "Import from 'motion' (not 'motion/react')."],
+  relatedApis: ["useScroll", "animate"],
+};
+
+const inViewFn: ApiEntry = {
+  name: "inView",
+  kind: "function",
+  description: "Standalone IntersectionObserver wrapper. Framework-agnostic. Callback can return a cleanup function that fires when element leaves viewport.",
+  importPath: 'import { inView } from "motion"',
+  returns: "() => void (cleanup)",
+  usage: `const cleanup = inView(element, (entry) => {
+  console.log("in view");
+  return () => console.log("left view");
+});`,
+  examples: [],
+  tips: ["Framework-agnostic — works without React.", "Import from 'motion' (not 'motion/react')."],
+  relatedApis: ["useInView"],
+};
+
+// ---------------------------------------------------------------------------
 // TRANSITIONS REFERENCE
 // ---------------------------------------------------------------------------
 
@@ -1233,8 +1448,10 @@ export const TRANSITIONS_REFERENCE = `
 ## Transition Types
 
 Motion auto-selects the transition type based on the animated value:
-- Physical values (x, y, scale, rotate): **spring**
-- Non-physical values (opacity, color): **tween**
+- Transform values (x, y, rotate): **spring** (stiffness: 500, damping: 25)
+- Scale values (scale, scaleX, scaleY): **spring** (stiffness: 550, damping: 30)
+- Non-physical values (opacity, color): **tween** (duration: 0.3, ease: cubic-bezier(0.25, 0.1, 0.35, 1))
+- Multiple keyframes (3+): **keyframes** (duration: 0.8)
 
 ### Tween
 { type: "tween", duration: 0.3, ease: "easeOut" }
@@ -1252,7 +1469,7 @@ Motion auto-selects the transition type based on the animated value:
 
 ### Spring — Physics-based
 { type: "spring", stiffness: 100, damping: 10, mass: 1 }
-- stiffness: default 1
+- stiffness: default 100
 - damping: default 10
 - mass: default 1
 - velocity: initial velocity
@@ -1260,7 +1477,7 @@ Motion auto-selects the transition type based on the animated value:
 - restDelta: default 0.01
 
 ### Inertia (used by drag momentum)
-{ type: "inertia", power: 0.8, timeConstant: 700 }
+{ type: "inertia", power: 0.8, timeConstant: 325 }
 - modifyTarget: (v) => Math.round(v / 50) * 50 (snap to grid)
 - min, max: boundaries
 - bounceStiffness: 500, bounceDamping: 10
@@ -1330,6 +1547,13 @@ export const ALL_APIS: ApiEntry[] = [
   usePresenceData,
   staggerFn,
   animateFn,
+  useWillChange,
+  useCycle,
+  usePageInView,
+  hoverFn,
+  pressFn,
+  scrollFn,
+  inViewFn,
 ];
 
 export interface SearchResult {
